@@ -1,21 +1,24 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View, Text, ToastAndroid } from "react-native";
+import { useIsFocused } from "@react-navigation/native";
 import styles from "./Login.styles";
 import { InputWithLabel, Button } from "../../components";
 import { users } from "../../mock/userCredentials";
 
 export default function Login({ navigation }) {
+  const isFocused = useIsFocused();
+
   const [inputs, setInputs] = useState({ email: "", password: "" });
   const [isAuth, setIsAuth] = useState(false);
 
-  const setLogout = useCallback(() => {
-    console.log("I'm fired");
-    setIsAuth(!isAuth);
-    console.log(isAuth);
-    if (!isAuth) {
-      setInputs({ email: "", password: "" });
-    }
-  });
+  useEffect(() => {
+    setInputs({ email: "", password: "" });
+  }, [isFocused]);
+
+  useEffect(() => {
+    console.log({ isAuth });
+    if (isAuth) navigation.navigate("HOME");
+  }, [isAuth]);
   const handleInputOnChange = (value, from) => {
     if (from === 1) {
       setInputs({
@@ -39,10 +42,7 @@ export default function Login({ navigation }) {
     } else if (user.password !== inputs.password) {
       ToastAndroid.show("Email or password is incorrect", ToastAndroid.SHORT);
     } else {
-      console.log(isAuth);
-      setIsAuth(!isAuth);
-      console.log(isAuth);
-      navigation.navigate("HOME", { setLogout });
+      setIsAuth(true);
     }
   };
 

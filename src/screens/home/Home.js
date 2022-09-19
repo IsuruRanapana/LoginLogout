@@ -1,21 +1,42 @@
-import { View, Text, Image } from "react-native";
+import { View, FlatList, BackHandler, Text } from "react-native";
 import styles from "./Home.styles";
-import { Button } from "../../components";
-import imgs from "../../../assets/img";
+import { Button, ItemCard } from "../../components";
+import { useEffect, useState } from "react";
+import { get } from "../../api/baseAPI";
 
-export default function Home({ navigation, route }) {
-  const { setLogout } = route.params;
+export default function Home({ navigation }) {
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => true
+    );
+    return () => backHandler.remove();
+  });
+
+  const [listData, setListData] = useState([]);
+
+  const handleLoadPosts = async () => {
+    const data = await get({ endpoint: "posts" });
+    console.log(data);
+    setListData(data);
+  };
+
   const handleOnPress = () => {
-    setLogout();
     navigation.pop();
   };
 
+  const renderItem = ({ item, index }) => {
+    return <ItemCard title={item?.title} userId={item?.userId} id={item?.id} />;
+  };
   return (
     <View style={styles.container}>
-      <View style={styles.imgContainer}>
-        <Image source={imgs.gtfo} style={styles.image} />
-      </View>
+      <FlatList
+        data={listData}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => index.toString()}
+      />
       <View style={styles.btn}>
+        <Button labelText={"Load Posts"} onPress={handleLoadPosts} />
         <Button labelText={"Logout"} onPress={handleOnPress} />
       </View>
     </View>
